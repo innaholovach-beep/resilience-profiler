@@ -1,0 +1,110 @@
+<!--
+  RAG-чат компонент для додавання в index.html
+  Вставити ПІСЛЯ секції results і ПЕРЕД закриваючим </body>
+
+  Кроки:
+  1. Додай цей HTML у page-results (після rec-list)
+  2. Додай JavaScript функцію askRag() у script тег
+-->
+
+<!-- ── RAG Chat (додати у #page-results після .rec-list) ── -->
+<div style="margin-top:2rem;">
+  <p class="section-title">Запитай асистента</p>
+  <div id="chat-messages" style="
+    min-height:80px; max-height:400px; overflow-y:auto;
+    display:flex; flex-direction:column; gap:10px;
+    margin-bottom:12px;
+  "></div>
+
+  <div style="display:flex; gap:8px;">
+    <input
+      id="chat-input"
+      type="text"
+      placeholder="Як мені покращити емоційну регуляцію?"
+      style="flex:1; padding:10px 14px; border-radius:8px;
+             border:0.5px solid rgba(0,0,0,0.15); font-size:14px; outline:none;"
+      onkeydown="if(event.key==='Enter') askRag()"
+    />
+    <button
+      class="btn btn-primary"
+      onclick="askRag()"
+      style="padding:10px 20px; white-space:nowrap;"
+    >Запитати</button>
+  </div>
+  <p style="font-size:12px;color:#888;margin-top:6px;">
+    Асистент враховує твій профіль резильєнтності та наукові матеріали
+  </p>
+</div>
+
+<!-- ── JavaScript функція (додати у <script>) ── -->
+<script>
+let currentProfileId = null;  // встановлюється після отримання результатів
+
+async function askRag() {
+  const input = document.getElementById('chat-input');
+  const question = input.value.trim();
+  if (!question || !currentProfileId) return;
+
+  const chat = document.getElementById('chat-messages');
+
+  // Повідомлення користувача
+  chat.innerHTML += `
+    <div style="align-self:flex-end; background:#7F77DD; color:white;
+                padding:8px 14px; border-radius:12px 12px 2px 12px;
+                max-width:80%; font-size:14px; line-height:1.5;">
+      ${question}
+    </div>`;
+
+  // Індикатор завантаження
+  const loadId = 'load-' + Date.now();
+  chat.innerHTML += `
+    <div id="${loadId}" style="align-self:flex-start; background:#F1EFE8;
+                padding:8px 14px; border-radius:12px 12px 12px 2px;
+                max-width:80%; font-size:14px; color:#888;">
+      ···
+    </div>`;
+  chat.scrollTop = chat.scrollHeight;
+  input.value = '';
+
+  try {
+    const resp = await fetch('/api/rag/ask', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify({ question, profile_id: currentProfileId }),
+    });
+
+    const data = await resp.json();
+    const answer = resp.ok ? data.answer : `Помилка: ${data.detail}`;
+    const sources = resp.ok && data.sources?.length
+      ? `<div style="font-size:11px;color:#888;margin-top:6px;">
+           Джерела: ${data.sources.map(s => s.source).join(', ')}
+         </div>`
+      : '';
+
+    document.getElementById(loadId).outerHTML = `
+      <div style="align-self:flex-start; background:#F1EFE8;
+                  padding:10px 14px; border-radius:12px 12px 12px 2px;
+                  max-width:85%; font-size:14px; line-height:1.6; color:#2C2C2A;">
+        ${answer.replace(/\n/g, '<br>')}
+        ${sources}
+      </div>`;
+
+  } catch (e) {
+    document.getElementById(loadId).outerHTML = `
+      <div style="align-self:flex-start; background:#FCEBEB; color:#791F1F;
+                  padding:8px 14px; border-radius:12px 12px 12px 2px; font-size:14px;">
+        Помилка з'єднання з сервером
+      </div>`;
+  }
+
+  chat.scrollTop = chat.scrollHeight;
+}
+
+// Замінити у функції loadResults():
+// const data = await res.json();
+// currentProfileId = data.id;   // ← додати цей рядок
+// renderResults(data);
+</script>

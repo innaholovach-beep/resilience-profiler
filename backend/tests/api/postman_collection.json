@@ -1,0 +1,213 @@
+{
+  "info": {
+    "name": "Resilience Profiler API",
+    "description": "ЛАБА 14 — Повна Postman-колекція для тестування REST API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:8000" },
+    { "key": "token",    "value": "" },
+    { "key": "profile_id", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Health Check",
+      "request": {
+        "method": "GET",
+        "url": "{{base_url}}/health"
+      },
+      "event": [{
+        "listen": "test",
+        "script": { "exec": [
+          "pm.test('Status 200', () => pm.response.to.have.status(200));",
+          "pm.test('Status ok', () => pm.expect(pm.response.json().status).to.eq('ok'));"
+        ]}
+      }]
+    },
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/api/auth/register",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\": \"postman@test.com\", \"password\": \"Test123\", \"full_name\": \"Postman Test\"}"
+            }
+          },
+          "event": [{
+            "listen": "test",
+            "script": { "exec": [
+              "pm.test('Status 201', () => pm.response.to.have.status(201));",
+              "pm.test('Has token', () => pm.expect(pm.response.json()).to.have.property('access_token'));",
+              "pm.collectionVariables.set('token', pm.response.json().access_token);"
+            ]}
+          }]
+        },
+        {
+          "name": "Register Duplicate — Expect 400",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/api/auth/register",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\": \"postman@test.com\", \"password\": \"Test123\"}"
+            }
+          },
+          "event": [{
+            "listen": "test",
+            "script": { "exec": [
+              "pm.test('Status 400', () => pm.response.to.have.status(400));"
+            ]}
+          }]
+        },
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/api/auth/login",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\": \"postman@test.com\", \"password\": \"Test123\"}"
+            }
+          },
+          "event": [{
+            "listen": "test",
+            "script": { "exec": [
+              "pm.test('Status 200', () => pm.response.to.have.status(200));",
+              "pm.test('Has token', () => pm.expect(pm.response.json()).to.have.property('access_token'));",
+              "pm.collectionVariables.set('token', pm.response.json().access_token);"
+            ]}
+          }]
+        },
+        {
+          "name": "Login Wrong Password — Expect 401",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/api/auth/login",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\": \"postman@test.com\", \"password\": \"wrong\"}"
+            }
+          },
+          "event": [{
+            "listen": "test",
+            "script": { "exec": [
+              "pm.test('Status 401', () => pm.response.to.have.status(401));"
+            ]}
+          }]
+        }
+      ]
+    },
+    {
+      "name": "Survey",
+      "item": [
+        {
+          "name": "Get Questions",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/survey/questions"
+          },
+          "event": [{
+            "listen": "test",
+            "script": { "exec": [
+              "pm.test('Status 200', () => pm.response.to.have.status(200));",
+              "pm.test('25 questions', () => pm.expect(pm.response.json().total).to.eq(25));",
+              "pm.test('Each has id, text, scale', () => {",
+              "  pm.response.json().questions.forEach(q => {",
+              "    pm.expect(q).to.have.all.keys('id', 'text', 'scale');",
+              "  });",
+              "});"
+            ]}
+          }]
+        },
+        {
+          "name": "Submit Survey (all 4s)",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/api/survey/submit",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"answers\": {\"1\":4,\"2\":4,\"3\":4,\"4\":4,\"5\":4,\"6\":4,\"7\":4,\"8\":4,\"9\":4,\"10\":4,\"11\":4,\"12\":4,\"13\":4,\"14\":4,\"15\":4,\"16\":4,\"17\":4,\"18\":4,\"19\":4,\"20\":4,\"21\":4,\"22\":4,\"23\":4,\"24\":4,\"25\":4}}"
+            }
+          },
+          "event": [{
+            "listen": "test",
+            "script": { "exec": [
+              "pm.test('Status 201', () => pm.response.to.have.status(201));",
+              "pm.test('Has profile_id', () => pm.expect(pm.response.json()).to.have.property('profile_id'));",
+              "pm.collectionVariables.set('profile_id', pm.response.json().profile_id);"
+            ]}
+          }]
+        },
+        {
+          "name": "Submit Without Auth — Expect 403",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/api/survey/submit",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\"answers\": {}}" }
+          },
+          "event": [{
+            "listen": "test",
+            "script": { "exec": [
+              "pm.test('Status 403', () => pm.response.to.have.status(403));"
+            ]}
+          }]
+        }
+      ]
+    },
+    {
+      "name": "Profile",
+      "item": [
+        {
+          "name": "Get Profile",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/profile/{{profile_id}}",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          },
+          "event": [{
+            "listen": "test",
+            "script": { "exec": [
+              "pm.test('Status 200', () => pm.response.to.have.status(200));",
+              "const d = pm.response.json();",
+              "pm.test('Has overall_score', () => pm.expect(d).to.have.property('overall_score'));",
+              "pm.test('Has 5 dimensions', () => pm.expect(Object.keys(d.dimensions).length).to.eq(5));",
+              "pm.test('Has recommendations', () => pm.expect(d.recommendations.length).to.eq(5));",
+              "pm.test('Score in range [1,5]', () => {",
+              "  pm.expect(d.overall_score).to.be.at.least(1);",
+              "  pm.expect(d.overall_score).to.be.at.most(5);",
+              "});"
+            ]}
+          }]
+        },
+        {
+          "name": "Get My All Profiles",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/profile/my/all",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          },
+          "event": [{
+            "listen": "test",
+            "script": { "exec": [
+              "pm.test('Status 200', () => pm.response.to.have.status(200));",
+              "pm.test('Returns array', () => pm.expect(pm.response.json()).to.be.an('array'));"
+            ]}
+          }]
+        }
+      ]
+    }
+  ]
+}

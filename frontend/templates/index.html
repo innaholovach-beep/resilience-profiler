@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Resilience Profiler</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --purple: #7F77DD;
+      --purple-light: #EEEDFE;
+      --teal: #1D9E75;
+      --teal-light: #E1F5EE;
+      --amber: #BA7517;
+      --amber-light: #FAEEDA;
+      --gray: #888780;
+      --gray-light: #F1EFE8;
+      --text: #2C2C2A;
+      --text-muted: #5F5E5A;
+      --border: rgba(0,0,0,0.12);
+      --radius: 12px;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: var(--gray-light);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ── Navbar ── */
+    nav {
+      background: white;
+      border-bottom: 0.5px solid var(--border);
+      padding: 0 2rem;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .logo { font-weight: 600; font-size: 17px; color: var(--purple); }
+    .nav-links { display: flex; gap: 1rem; align-items: center; }
+    .nav-links a { text-decoration: none; color: var(--text-muted); font-size: 14px; }
+    .btn {
+      padding: 8px 18px;
+      border-radius: 8px;
+      border: 0.5px solid var(--border);
+      background: white;
+      cursor: pointer;
+      font-size: 14px;
+      color: var(--text);
+      transition: background 0.15s;
+    }
+    .btn:hover { background: var(--gray-light); }
+    .btn-primary {
+      background: var(--purple);
+      color: white;
+      border-color: var(--purple);
+    }
+    .btn-primary:hover { background: #534AB7; }
+
+    /* ── Pages ── */
+    .page { display: none; }
+    .page.active { display: block; }
+
+    /* ── Hero ── */
+    .hero {
+      max-width: 640px;
+      margin: 6rem auto 0;
+      text-align: center;
+      padding: 0 1.5rem;
+    }
+    .hero h1 { font-size: 2rem; font-weight: 600; margin-bottom: 1rem; line-height: 1.3; }
+    .hero h1 span { color: var(--purple); }
+    .hero p { color: var(--text-muted); font-size: 16px; line-height: 1.7; margin-bottom: 2rem; }
+    .hero-btns { display: flex; gap: 12px; justify-content: center; }
+
+    /* ── Auth forms ── */
+    .auth-wrap {
+      max-width: 420px;
+      margin: 4rem auto;
+      padding: 0 1.5rem;
+    }
+    .card {
+      background: white;
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius);
+      padding: 2rem;
+    }
+    .card h2 { font-size: 1.2rem; font-weight: 600; margin-bottom: 1.5rem; }
+    .field { margin-bottom: 1rem; }
+    .field label { display: block; font-size: 13px; color: var(--text-muted); margin-bottom: 6px; }
+    .field input {
+      width: 100%;
+      padding: 10px 12px;
+      border: 0.5px solid var(--border);
+      border-radius: 8px;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    .field input:focus { border-color: var(--purple); }
+    .form-footer { margin-top: 1rem; font-size: 13px; color: var(--text-muted); text-align: center; }
+    .form-footer a { color: var(--purple); cursor: pointer; text-decoration: none; }
+    .error-msg { color: #A32D2D; font-size: 13px; margin-top: 8px; display: none; }
+
+    /* ── Survey ── */
+    .survey-wrap {
+      max-width: 720px;
+      margin: 2rem auto;
+      padding: 0 1.5rem 4rem;
+    }
+    .survey-header { margin-bottom: 1.5rem; }
+    .survey-header h2 { font-size: 1.3rem; font-weight: 600; }
+    .survey-header p { color: var(--text-muted); font-size: 14px; margin-top: 4px; }
+
+    .progress-bar {
+      width: 100%;
+      height: 4px;
+      background: var(--border);
+      border-radius: 2px;
+      margin: 1rem 0 2rem;
+    }
+    .progress-fill {
+      height: 100%;
+      background: var(--purple);
+      border-radius: 2px;
+      transition: width 0.3s ease;
+    }
+
+    .scale-section { margin-bottom: 2rem; }
+    .scale-title {
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--purple);
+      margin-bottom: 0.75rem;
+      padding: 4px 10px;
+      background: var(--purple-light);
+      border-radius: 6px;
+      display: inline-block;
+    }
+
+    .question {
+      background: white;
+      border: 0.5px solid var(--border);
+      border-radius: 10px;
+      padding: 1rem 1.25rem;
+      margin-bottom: 10px;
+    }
+    .question p { font-size: 15px; margin-bottom: 0.75rem; line-height: 1.5; }
+    .scale-row {
+      display: flex;
+      align-items: center;
+      gap: 0;
+    }
+    .scale-label { font-size: 11px; color: var(--text-muted); white-space: nowrap; }
+    .scale-label.left { margin-right: 12px; }
+    .scale-label.right { margin-left: 12px; }
+    .radio-group { display: flex; gap: 8px; flex: 1; justify-content: center; }
+    .radio-opt {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+    }
+    .radio-opt input { display: none; }
+    .radio-circle {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: 0.5px solid var(--border);
+      background: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      color: var(--text-muted);
+      transition: all 0.15s;
+      user-select: none;
+    }
+    .radio-opt:hover .radio-circle { border-color: var(--purple); color: var(--purple); }
+    .radio-opt input:checked + .radio-circle {
+      background: var(--purple);
+      border-color: var(--purple);
+      color: white;
+      font-weight: 600;
+    }
+
+    /* ── Results ── */
+    .results-wrap {
+      max-width: 720px;
+      margin: 2rem auto;
+      padding: 0 1.5rem 4rem;
+    }
+    .results-header { margin-bottom: 1.5rem; }
+    .results-header h2 { font-size: 1.4rem; font-weight: 600; }
+
+    .overall-card {
+      background: var(--purple-light);
+      border: 0.5px solid var(--purple);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+    }
+    .overall-score {
+      font-size: 3rem;
+      font-weight: 700;
+      color: var(--purple);
+      line-height: 1;
+      min-width: 80px;
+      text-align: center;
+    }
+    .overall-info h3 { font-size: 1.1rem; font-weight: 600; }
+    .overall-info p { font-size: 14px; color: var(--text-muted); margin-top: 4px; line-height: 1.5; }
+    .badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      margin-top: 8px;
+    }
+    .badge-high     { background: var(--teal-light); color: #085041; }
+    .badge-moderate { background: var(--amber-light); color: #633806; }
+    .badge-low      { background: #FCEBEB; color: #791F1F; }
+
+    .dimensions-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+      margin-bottom: 1.5rem;
+    }
+    .dim-card {
+      background: white;
+      border: 0.5px solid var(--border);
+      border-radius: 10px;
+      padding: 1rem;
+    }
+    .dim-card .dim-name { font-size: 13px; color: var(--text-muted); margin-bottom: 6px; }
+    .dim-card .dim-score { font-size: 1.5rem; font-weight: 700; }
+    .dim-bar-track { height: 4px; background: var(--gray-light); border-radius: 2px; margin-top: 8px; }
+    .dim-bar-fill { height: 100%; border-radius: 2px; background: var(--purple); transition: width 0.6s ease; }
+
+    .rec-list { display: flex; flex-direction: column; gap: 10px; }
+    .rec-item {
+      background: white;
+      border: 0.5px solid var(--border);
+      border-radius: 10px;
+      padding: 1rem 1.25rem;
+    }
+    .rec-item .rec-scale { font-size: 12px; font-weight: 600; color: var(--purple); margin-bottom: 4px; }
+    .rec-item .rec-text { font-size: 14px; line-height: 1.6; color: var(--text-muted); }
+
+    /* ── Canvas for radar chart ── */
+    .radar-wrap {
+      background: white;
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem;
+      margin-bottom: 1.5rem;
+      display: flex;
+      justify-content: center;
+    }
+
+    .section-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 0.75rem;
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <span class="logo">Resilience Profiler</span>
+  <div class="nav-links">
+    <span id="nav-user" style="font-size:13px;color:var(--text-muted);display:none;"></span>
+    <button class="btn" id="btn-logout" style="display:none;" onclick="logout()">Вийти</button>
+    <button class="btn" id="btn-nav-login" onclick="showPage('login')">Увійти</button>
+    <button class="btn btn-primary" id="btn-nav-register" onclick="showPage('register')">Зареєструватись</button>
+  </div>
+</nav>
+
+<!-- ── PAGE: Home ── -->
+<div id="page-home" class="page active">
+  <div class="hero">
+    <h1>Дізнайся свій рівень<br><span>психологічної резильєнтності</span></h1>
+    <p>25 питань — 5 вимірів — персональний профіль з рекомендаціями.<br>
+       Система на основі машинного навчання аналізує твої відповіді та будує профіль стійкості.</p>
+    <div class="hero-btns">
+      <button class="btn btn-primary" onclick="showPage('register')">Почати тест</button>
+      <button class="btn" onclick="showPage('login')">Вже маю акаунт</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── PAGE: Register ── -->
+<div id="page-register" class="page">
+  <div class="auth-wrap">
+    <div class="card">
+      <h2>Реєстрація</h2>
+      <div class="field">
+        <label>Ім'я</label>
+        <input type="text" id="reg-name" placeholder="Ваше ім'я" />
+      </div>
+      <div class="field">
+        <label>Email</label>
+        <input type="email" id="reg-email" placeholder="email@example.com" />
+      </div>
+      <div class="field">
+        <label>Пароль</label>
+        <input type="password" id="reg-pass" placeholder="Мінімум 6 символів" />
+      </div>
+      <div class="error-msg" id="reg-error"></div>
+      <button class="btn btn-primary" style="width:100%;margin-top:0.5rem" onclick="register()">
+        Зареєструватись
+      </button>
+      <div class="form-footer">
+        Вже є акаунт? <a onclick="showPage('login')">Увійти</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── PAGE: Login ── -->
+<div id="page-login" class="page">
+  <div class="auth-wrap">
+    <div class="card">
+      <h2>Вхід</h2>
+      <div class="field">
+        <label>Email</label>
+        <input type="email" id="login-email" placeholder="email@example.com" />
+      </div>
+      <div class="field">
+        <label>Пароль</label>
+        <input type="password" id="login-pass" placeholder="Ваш пароль" />
+      </div>
+      <div class="error-msg" id="login-error"></div>
+      <button class="btn btn-primary" style="width:100%;margin-top:0.5rem" onclick="doLogin()">
+        Увійти
+      </button>
+      <div class="form-footer">
+        Немає акаунту? <a onclick="showPage('register')">Зареєструватись</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── PAGE: Survey ── -->
+<div id="page-survey" class="page">
+  <div class="survey-wrap">
+    <div class="survey-header">
+      <h2>Анкета резильєнтності</h2>
+      <p>Оцініть кожне твердження від 1 (зовсім не про мене) до 5 (повністю про мене)</p>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="progress" style="width:0%"></div></div>
+    <div id="questions-container"></div>
+    <button class="btn btn-primary" style="margin-top:1.5rem;padding:12px 32px;font-size:15px"
+            onclick="submitSurvey()">
+      Отримати профіль →
+    </button>
+  </div>
+</div>
+
+<!-- ── PAGE: Results ── -->
+<div id="page-results" class="page">
+  <div class="results-wrap">
+    <div class="results-header">
+      <h2>Ваш профіль резильєнтності</h2>
+    </div>
+
+    <div class="overall-card">
+      <div class="overall-score" id="res-score">—</div>
+      <div class="overall-info">
+        <div id="res-badge"></div>
+        <h3 id="res-type">Завантаження...</h3>
+        <p id="res-desc"></p>
+      </div>
+    </div>
+
+    <div class="radar-wrap">
+      <canvas id="radar-chart" width="340" height="300"></canvas>
+    </div>
+
+    <p class="section-title">Виміри резильєнтності</p>
+    <div class="dimensions-grid" id="dims-grid"></div>
+
+    <p class="section-title">Персональні рекомендації</p>
+    <div class="rec-list" id="rec-list"></div>
+
+    <button class="btn" style="margin-top:2rem" onclick="showPage('survey')">
+      Пройти ще раз
+    </button>
+  </div>
+</div>
+
+<script>
+const API = '';  // '' = same origin; set to 'http://localhost:8000' for dev
+
+const SCALE_NAMES = {
+  emotional_regulation: 'Емоційна регуляція',
+  cognitive_flexibility: 'Когнітивна гнучкість',
+  social_support:        'Соціальна підтримка',
+  self_efficacy:         'Самоефективність',
+  meaning_making:        'Осмислення досвіду',
+};
+
+const SCALE_ORDER = Object.keys(SCALE_NAMES);
+
+let token = localStorage.getItem('rp_token') || null;
+let questions = [];
+
+// ── Navigation ────────────────────────────────────────────────────────────────
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  if (name === 'survey' && questions.length === 0) loadQuestions();
+}
+
+function updateNav() {
+  const email = localStorage.getItem('rp_email');
+  document.getElementById('nav-user').style.display = token ? 'inline' : 'none';
+  document.getElementById('nav-user').textContent = email || '';
+  document.getElementById('btn-logout').style.display = token ? 'inline-block' : 'none';
+  document.getElementById('btn-nav-login').style.display = token ? 'none' : 'inline-block';
+  document.getElementById('btn-nav-register').style.display = token ? 'none' : 'inline-block';
+}
+
+function logout() {
+  token = null;
+  localStorage.removeItem('rp_token');
+  localStorage.removeItem('rp_email');
+  updateNav();
+  showPage('home');
+}
+
+// ── Auth ──────────────────────────────────────────────────────────────────────
+async function register() {
+  const name  = document.getElementById('reg-name').value.trim();
+  const email = document.getElementById('reg-email').value.trim();
+  const pass  = document.getElementById('reg-pass').value;
+  const err   = document.getElementById('reg-error');
+  err.style.display = 'none';
+
+  try {
+    const res = await fetch(`${API}/api/auth/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password: pass, full_name: name }),
+    });
+    const data = await res.json();
+    if (!res.ok) { err.textContent = data.detail; err.style.display = 'block'; return; }
+    token = data.access_token;
+    localStorage.setItem('rp_token', token);
+    localStorage.setItem('rp_email', data.email);
+    updateNav();
+    showPage('survey');
+  } catch (e) {
+    err.textContent = 'Помилка з\'єднання з сервером';
+    err.style.display = 'block';
+  }
+}
+
+async function doLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const pass  = document.getElementById('login-pass').value;
+  const err   = document.getElementById('login-error');
+  err.style.display = 'none';
+
+  try {
+    const res = await fetch(`${API}/api/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password: pass }),
+    });
+    const data = await res.json();
+    if (!res.ok) { err.textContent = data.detail; err.style.display = 'block'; return; }
+    token = data.access_token;
+    localStorage.setItem('rp_token', token);
+    localStorage.setItem('rp_email', data.email);
+    updateNav();
+    showPage('survey');
+  } catch (e) {
+    err.textContent = 'Помилка з\'єднання з сервером';
+    err.style.display = 'block';
+  }
+}
+
+// ── Survey ────────────────────────────────────────────────────────────────────
+async function loadQuestions() {
+  try {
+    const res  = await fetch(`${API}/api/survey/questions`);
+    const data = await res.json();
+    questions  = data.questions;
+    renderQuestions();
+  } catch (e) {
+    document.getElementById('questions-container').innerHTML =
+      '<p style="color:red">Не вдалось завантажити питання. Перевір підключення до сервера.</p>';
+  }
+}
+
+function renderQuestions() {
+  const container = document.getElementById('questions-container');
+  const byScale   = {};
+  questions.forEach(q => {
+    if (!byScale[q.scale]) byScale[q.scale] = [];
+    byScale[q.scale].push(q);
+  });
+
+  container.innerHTML = SCALE_ORDER.map(scale => `
+    <div class="scale-section">
+      <div class="scale-title">${SCALE_NAMES[scale]}</div>
+      ${byScale[scale].map(q => `
+        <div class="question" id="q-wrap-${q.id}">
+          <p>${q.id}. ${q.text}</p>
+          <div class="scale-row">
+            <span class="scale-label left">Зовсім не про мене</span>
+            <div class="radio-group">
+              ${[1,2,3,4,5].map(v => `
+                <label class="radio-opt">
+                  <input type="radio" name="q${q.id}" value="${v}"
+                         onchange="updateProgress()">
+                  <span class="radio-circle">${v}</span>
+                </label>`).join('')}
+            </div>
+            <span class="scale-label right">Повністю про мене</span>
+          </div>
+        </div>`).join('')}
+    </div>`).join('');
+}
+
+function updateProgress() {
+  const answered = questions.filter(q =>
+    document.querySelector(`input[name="q${q.id}"]:checked`)
+  ).length;
+  document.getElementById('progress').style.width =
+    Math.round((answered / questions.length) * 100) + '%';
+}
+
+async function submitSurvey() {
+  if (!token) { showPage('login'); return; }
+
+  const answers = {};
+  let missing = false;
+
+  questions.forEach(q => {
+    const checked = document.querySelector(`input[name="q${q.id}"]:checked`);
+    if (checked) {
+      answers[q.id] = parseInt(checked.value);
+    } else {
+      missing = true;
+      document.getElementById('q-wrap-' + q.id).style.border = '1px solid #E24B4A';
+    }
+  });
+
+  if (missing) {
+    alert('Будь ласка, дай відповідь на всі питання (виділені червоним)');
+    return;
+  }
+
+  try {
+    const res = await fetch(`${API}/api/survey/submit`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify({ answers }),
+    });
+    const data = await res.json();
+    if (!res.ok) { alert('Помилка: ' + data.detail); return; }
+    await loadResults(data.profile_id);
+  } catch (e) {
+    alert('Помилка з\'єднання з сервером');
+  }
+}
+
+// ── Results ───────────────────────────────────────────────────────────────────
+async function loadResults(profileId) {
+  const res  = await fetch(`${API}/api/profile/${profileId}`, {
+    headers: { 'Authorization': `Bearer ${token}` },
+  });
+  const data = await res.json();
+  renderResults(data);
+  showPage('results');
+}
+
+function renderResults(data) {
+  const typeLabels = {
+    High: 'Висока резильєнтність',
+    Moderate: 'Помірна резильєнтність',
+    Low: 'Низька резильєнтність',
+  };
+  const typeDesc = {
+    High: 'Ви демонструєте сильну здатність долати труднощі та адаптуватись до змін. Продовжуйте підтримувати свої стратегії.',
+    Moderate: 'Ви маєте хорошу базу стійкості. Є окремі напрямки, де розвиток принесе значний результат.',
+    Low: 'Зараз вам може бути складно справлятись зі стресом. Рекомендації нижче допоможуть розвинути ресурси.',
+  };
+
+  document.getElementById('res-score').textContent = data.overall_score.toFixed(1);
+  document.getElementById('res-type').textContent = typeLabels[data.profile_type];
+  document.getElementById('res-desc').textContent = typeDesc[data.profile_type];
+
+  const badgeClass = { High:'badge-high', Moderate:'badge-moderate', Low:'badge-low' };
+  document.getElementById('res-badge').innerHTML =
+    `<span class="badge ${badgeClass[data.profile_type]}">${data.profile_type}</span>`;
+
+  // Radar chart
+  drawRadar(data.dimensions);
+
+  // Dimensions grid
+  document.getElementById('dims-grid').innerHTML = SCALE_ORDER.map(key => {
+    const score = data.dimensions[key];
+    const pct   = ((score - 1) / 4) * 100;
+    return `
+      <div class="dim-card">
+        <div class="dim-name">${SCALE_NAMES[key]}</div>
+        <div class="dim-score">${score.toFixed(1)}</div>
+        <div class="dim-bar-track">
+          <div class="dim-bar-fill" style="width:${pct}%"></div>
+        </div>
+      </div>`;
+  }).join('');
+
+  // Recommendations
+  document.getElementById('rec-list').innerHTML = data.recommendations.map(r => `
+    <div class="rec-item">
+      <div class="rec-scale">${SCALE_NAMES[r.scale]} — ${r.level} (${r.score.toFixed(1)})</div>
+      <div class="rec-text">${r.recommendation}</div>
+    </div>`).join('');
+}
+
+function drawRadar(dimensions) {
+  const canvas = document.getElementById('radar-chart');
+  const ctx    = canvas.getContext('2d');
+  const cx = canvas.width / 2, cy = canvas.height / 2 + 10;
+  const R  = 110;
+  const labels = SCALE_ORDER.map(k => SCALE_NAMES[k]);
+  const values = SCALE_ORDER.map(k => dimensions[k]);
+  const n      = labels.length;
+  const angle0 = -Math.PI / 2;
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // Grid
+  for (let level = 1; level <= 5; level++) {
+    const r = (R * level) / 5;
+    ctx.beginPath();
+    for (let i = 0; i < n; i++) {
+      const a = angle0 + (2 * Math.PI * i) / n;
+      const x = cx + r * Math.cos(a), y = cy + r * Math.sin(a);
+      i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    }
+    ctx.closePath();
+    ctx.strokeStyle = 'rgba(0,0,0,0.08)';
+    ctx.lineWidth = 0.5;
+    ctx.stroke();
+  }
+
+  // Axes
+  for (let i = 0; i < n; i++) {
+    const a = angle0 + (2 * Math.PI * i) / n;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.lineTo(cx + R * Math.cos(a), cy + R * Math.sin(a));
+    ctx.strokeStyle = 'rgba(0,0,0,0.1)';
+    ctx.lineWidth = 0.5;
+    ctx.stroke();
+  }
+
+  // Data polygon
+  ctx.beginPath();
+  values.forEach((v, i) => {
+    const r = (R * v) / 5;
+    const a = angle0 + (2 * Math.PI * i) / n;
+    const x = cx + r * Math.cos(a), y = cy + r * Math.sin(a);
+    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  });
+  ctx.closePath();
+  ctx.fillStyle   = 'rgba(127,119,221,0.2)';
+  ctx.strokeStyle = '#7F77DD';
+  ctx.lineWidth   = 2;
+  ctx.fill();
+  ctx.stroke();
+
+  // Points
+  values.forEach((v, i) => {
+    const r = (R * v) / 5;
+    const a = angle0 + (2 * Math.PI * i) / n;
+    ctx.beginPath();
+    ctx.arc(cx + r * Math.cos(a), cy + r * Math.sin(a), 4, 0, 2 * Math.PI);
+    ctx.fillStyle = '#7F77DD';
+    ctx.fill();
+  });
+
+  // Labels
+  ctx.fillStyle = '#5F5E5A';
+  ctx.font      = '11px system-ui, sans-serif';
+  ctx.textAlign = 'center';
+  const shortLabels = ['Емоційна\nрегуляція','Когнітивна\nгнучкість','Соціальна\nпідтримка','Само-\nефективність','Осмислення\nдосвіду'];
+  shortLabels.forEach((lbl, i) => {
+    const a  = angle0 + (2 * Math.PI * i) / n;
+    const lr = R + 28;
+    const x  = cx + lr * Math.cos(a);
+    const y  = cy + lr * Math.sin(a);
+    lbl.split('\n').forEach((line, li) => {
+      ctx.fillText(line, x, y + li * 14 - (lbl.includes('\n') ? 7 : 0));
+    });
+  });
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+updateNav();
+if (token) showPage('home');
+</script>
+</body>
+</html>
