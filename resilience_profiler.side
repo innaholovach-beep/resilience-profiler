@@ -1,0 +1,124 @@
+{
+  "id": "b2d36112-703d-455e-a33c-a6a1b6c569c2",
+  "version": "3.0",
+  "name": "resilience_profiler",
+  "url": "http://127.0.0.1:8000",
+  "urls": [
+    "http://127.0.0.1:8000"
+  ],
+  "plugins": [],
+  "suites": [
+    {
+      "id": "d5b5a00c-4ed9-488f-97f6-ed3dd41b9529",
+      "name": "Resilience Profiler — Smoke Tests",
+      "parallel": false,
+      "persistSession": false,
+      "tests": [
+        "tc-01-register",
+        "tc-02-login",
+        "tc-03-survey",
+        "tc-04-profile",
+        "tc-05-wrong-password"
+      ],
+      "timeout": 30000
+    }
+  ],
+  "tests": [
+    {
+      "id": "tc-01-register",
+      "name": "TC-01 Register new user",
+      "commands": [
+        {
+          "id": "cmd-01-01",
+          "command": "open",
+          "target": "/",
+          "value": ""
+        },
+        {
+          "id": "cmd-01-02",
+          "command": "assertElementPresent",
+          "target": "id=page-home",
+          "value": ""
+        },
+        {
+          "id": "cmd-01-03",
+          "command": "assertElementPresent",
+          "target": "id=page-register",
+          "value": ""
+        }
+      ]
+    },
+    {
+      "id": "tc-02-login",
+      "name": "TC-02 Login existing user",
+      "commands": [
+        {
+          "id": "cmd-02-01",
+          "command": "open",
+          "target": "/",
+          "value": ""
+        },
+        {
+          "id": "cmd-02-02",
+          "command": "assertElementPresent",
+          "target": "id=page-login",
+          "value": ""
+        }
+      ]
+    },
+    {
+      "id": "tc-03-survey",
+      "name": "TC-03 Complete survey",
+      "commands": [
+        {
+          "id": "cmd-03-01",
+          "command": "open",
+          "target": "/",
+          "value": ""
+        },
+        {
+          "id": "cmd-03-02",
+          "command": "assertElementPresent",
+          "target": "id=page-survey",
+          "value": ""
+        }
+      ]
+    },
+    {
+      "id": "tc-04-profile",
+      "name": "TC-04 View resilience profile",
+      "commands": [
+        {
+          "id": "cmd-04-01",
+          "command": "open",
+          "target": "/",
+          "value": ""
+        },
+        {
+          "id": "cmd-04-02",
+          "command": "assertElementPresent",
+          "target": "id=page-results",
+          "value": ""
+        }
+      ]
+    },
+    {
+      "id": "tc-05-wrong-password",
+      "name": "TC-05 Login with wrong password",
+      "commands": [
+        {
+          "id": "cmd-05-01",
+          "command": "open",
+          "target": "/",
+          "value": ""
+        },
+        {
+          "id": "cmd-05-02",
+          "command": "assertElementPresent",
+          "target": "id=page-login",
+          "value": ""
+        }
+      ]
+    }
+  ]
+}
