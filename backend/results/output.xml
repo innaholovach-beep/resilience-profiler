@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<robot generator="Robot 7.4.2 (Python 3.14.2 on win32)" generated="2026-05-05T22:08:38.332288" rpa="false" schemaversion="5">
+<suite id="s1" name="Resilience Profiler" source="D:\СумДу\АВТОМАТИЗАЦІЯ ТЕСТУВАННЯ\ПРОЕКТ З РАГ\resilience-profiler\backend\tests\ui\resilience_profiler.robot">
+<kw name="Open Browser" owner="SeleniumLibrary" type="SETUP">
+<msg time="2026-05-05T22:08:38.870702" level="INFO">Opening browser 'chrome' to base url 'http://127.0.0.1:8000'.</msg>
+<arg>http://127.0.0.1:8000</arg>
+<arg>chrome</arg>
+<doc>Opens a new browser instance to the optional ``url``.</doc>
+<status status="PASS" start="2026-05-05T22:08:38.870108" elapsed="2.495397"/>
+</kw>
+<test id="s1-t1" name="TC-01 Home Page Is Accessible" line="10">
+<kw name="Go To" owner="SeleniumLibrary">
+<msg time="2026-05-05T22:08:41.456516" level="INFO">Opening url 'http://127.0.0.1:8000'</msg>
+<arg>${BASE_URL}</arg>
+<doc>Navigates the current browser window to the provided ``url``.</doc>
+<status status="PASS" start="2026-05-05T22:08:41.455686" elapsed="0.127197"/>
+</kw>
+<kw name="Page Should Contain Element" owner="SeleniumLibrary">
+<msg time="2026-05-05T22:08:41.696866" level="INFO">Current page contains element 'id=page-home'.</msg>
+<arg>id=page-home</arg>
+<doc>Verifies that element ``locator`` is found on the current page.</doc>
+<status status="PASS" start="2026-05-05T22:08:41.639404" elapsed="0.057850"/>
+</kw>
+<kw name="Title Should Be" owner="SeleniumLibrary">
+<msg time="2026-05-05T22:08:41.717204" level="INFO">Page title is 'Resilience Profiler'.</msg>
+<arg>Resilience Profiler</arg>
+<doc>Verifies that the current page title equals ``title``.</doc>
+<status status="PASS" start="2026-05-05T22:08:41.699896" elapsed="0.017718"/>
+</kw>
+<doc>Перевірити що головна сторінка відкривається</doc>
+<status status="PASS" start="2026-05-05T22:08:41.366328" elapsed="0.368407"/>
+</test>
+<test id="s1-t2" name="TC-02 Registration Page Elements Present" line="16">
+<kw name="Go To" owner="SeleniumLibrary">
+<msg time="2026-05-05T22:08:41.751935" level="INFO">Opening url 'http://127.0.0.1:8000'</msg>
+<arg>${BASE_URL}</arg>
+<doc>Navigates the current browser window to the provided ``url``.</doc>
+<status status="PASS" start="2026-05-05T22:08:41.751282" elapsed="0.153036"/>
+</kw>
+<kw name="Page Should Contain Element" owner="SeleniumLibrary">
+<msg time="2026-05-05T22:08:41.952692" level="INFO">Current page contains element 'id=page-register'.</msg>
+<arg>id=page-register</arg>
+<doc>Verifies that element ``locator`` is found on the current page.</doc>
+<status status="PASS" start="2026-05-05T22:08:41.918684" elapsed="0.034343"/>
+</kw>
+<doc>Перевірити наявність елементів сторінки реєстрації</doc>
+<status status="PASS" start="2026-05-05T22:08:41.742403" elapsed="0.214740"/>
+</test>
+<test id="s1-t3" name="TC-03 Login Page Elements Present" line="21">
+<kw name="Go To" owner="SeleniumLibrary">
+<msg time="2026-05-05T22:08:41.962099" level="INFO">Opening url 'http://127.0.0.1:8000'</msg>
+<arg>${BASE_URL}</arg>
+<doc>Navigates the current browser window to the provided ``url``.</doc>
+<status status="PASS" start="2026-05-05T22:08:41.961452" elapsed="0.064299"/>
+</kw>
+<kw name="Page Should Contain Element" owner="SeleniumLibrary">
+<msg time="2026-05-05T22:08:42.110486" level="INFO">Current page contains element 'id=page-login'.</msg>
+<arg>id=page-login</arg>
+<doc>Verifies that element ``locator`` is found on the current page.</doc>
+<status status="PASS" start="2026-05-05T22:08:42.072983" elapsed="0.037834"/>
+</kw>
+<doc>Перевірити наявність елементів сторінки входу</doc>
+<status status="PASS" start="2026-05-05T22:08:41.958904" elapsed="0.155954"/>
+</test>
+<test id="s1-t4" name="TC-04 Survey Page Elements Present" line="26">
+<kw name="Go To" owner="SeleniumLibrary">
+<msg time="2026-05-05T22:08:42.121235" level="INFO">Opening url 'http://127.0.0.1:8000'</msg>
+<arg>${BASE_URL}</arg>
+<doc>Navigates the current browser window to the provided ``url``.</doc>
+<status status="PASS" start="2026-05-05T22:08:42.120560" elapsed="0.048495"/>
+</kw>
+<kw name="Page Should Contain Element" owner="SeleniumLibrary">
+<msg time="2026-05-05T22:08:42.251125" level="INFO">Current page contains element 'id=page-survey'.</msg>
+<arg>id=page-survey</arg>
+<doc>Verifies that element ``locator`` is found on the current page.</doc>
+<status status="PASS" start="2026-05-05T22:08:42.191552" elapsed="0.059892"/>
+</kw>
+<doc>Перевірити наявність елементів сторінки анкети</doc>
+<status status="PASS" start="2026-05-05T22:08:42.118360" elapsed="0.134516"/>
+</test>
+<test id="s1-t5" name="TC-05 Results Page Elements Present" line="31">
+<kw name="Go To" owner="SeleniumLibrary">
+<msg time="2026-05-05T22:08:42.270456" level="INFO">Opening url 'http://127.0.0.1:8000'</msg>
+<arg>${BASE_URL}</arg>
+<doc>Navigates the current browser window to the provided ``url``.</doc>
+<status status="PASS" start="2026-05-05T22:08:42.269768" elapsed="0.095981"/>
+</kw>
+<kw name="Page Should Contain Element" owner="SeleniumLibrary">
+<msg time="2026-05-05T22:08:42.432437" level="INFO">Current page contains element 'id=page-results'.</msg>
+<arg>id=page-results</arg>
+<doc>Verifies that element ``locator`` is found on the current page.</doc>
+<status status="PASS" start="2026-05-05T22:08:42.391225" elapsed="0.041585"/>
+</kw>
+<doc>Перевірити наявність елементів сторінки результатів</doc>
+<status status="PASS" start="2026-05-05T22:08:42.254979" elapsed="0.178817"/>
+</test>
+<kw name="Close Browser" owner="SeleniumLibrary" type="TEARDOWN">
+<doc>Closes the current browser.</doc>
+<status status="PASS" start="2026-05-05T22:08:42.439843" elapsed="3.615718"/>
+</kw>
+<status status="PASS" start="2026-05-05T22:08:38.336947" elapsed="7.718842"/>
+</suite>
+<statistics>
+<total>
+<stat pass="5" fail="0" skip="0">All Tests</stat>
+</total>
+<tag>
+</tag>
+<suite>
+<stat name="Resilience Profiler" id="s1" pass="5" fail="0" skip="0">Resilience Profiler</stat>
+</suite>
+</statistics>
+<errors>
+</errors>
+</robot>
